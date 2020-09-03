@@ -228,3 +228,6 @@ LOGGING = {
 # 实例化日志对象
 import logging
 logger = logging.getLogger('django')
+
+
+AUTHENTICATION_BACKENDS = ['apps.users.utils.AuthBackend']

@@ -3,6 +3,7 @@ import json
 import re
 from django import http
 from django.contrib.auth import login, authenticate
+from django.db.models import F
 
 from django_redis import get_redis_connection
 
@@ -55,8 +56,6 @@ class MobileCountView(View):
 
 
 # 定义用户注册接口
-
-
 class RegisterView(View):
 
     def post(self, request):
@@ -132,17 +131,15 @@ class LoginView(View):
                 'code': 400,
                 'errmsg': '缺少必传参数'
             })
-        user = authenticate(request, username = username, password = password)
+        user = authenticate(request, username=username, password=password)
 
         if user is None:
             return http.JsonResponse({
                 'code': '400',
                 'errmsg': '用户名或密码错误'
             })
-        if remembered != True:
-            request.session.set_expiry(0)
-        else:
-            request.session.set_expiry(None)
+        request.session.set_expiry(None) if remembered else request.session.set_expiry(0)
+
         # 3. 数据处理
         # 4. 状态保持
         login(request, user)

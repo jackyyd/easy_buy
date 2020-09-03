@@ -2,7 +2,7 @@ from django.views import View
 import json
 import re
 from django import http
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 
 from django_redis import get_redis_connection
 
@@ -108,3 +108,46 @@ class RegisterView(View):
         login(request, user)
         # 13.拼接json返回
         return http.JsonResponse({'code': 0, 'errmsg': '注册成功!'})
+
+
+# 定义用户登录类视图
+class LoginView(View):
+    """
+    实现用户登陆接口
+    """
+    def post(self, request):
+        """
+        请求方式：POST
+        :param request:
+        :return:
+        """
+        # 1. 参数接收
+        data_dict = json.loads(request.body.decode())
+        username = data_dict.get('username')
+        password = data_dict.get('password')
+        remembered = data_dict.get('remembered')
+        # 2. 参数校验
+        if not all([username, password]):
+            return http.JsonResponse({
+                'code': 400,
+                'errmsg': '缺少必传参数'
+            })
+        user = authenticate(request, username = username, password = password)
+
+        if user is None:
+            return http.JsonResponse({
+                'code': '400',
+                'errmsg': '用户名或密码错误'
+            })
+        if remembered != True:
+            request.session.set_expiry(0)
+        else:
+            request.session.set_expiry(None)
+        # 3. 数据处理
+        # 4. 状态保持
+        login(request, user)
+        # 5. 返回响应
+        return http.JsonResponse({
+            'code': 0,
+            'errmsg': 'ok'
+        })

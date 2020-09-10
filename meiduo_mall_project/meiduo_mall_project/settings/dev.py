@@ -20,6 +20,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
@@ -37,8 +38,9 @@ ALLOWED_HOSTS = ['api.meiduo.site',
 
 
 # Application definition
-
+# 注册子应用
 INSTALLED_APPS = [
+    # django子应用
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,11 +48,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'corsheaders', # 注册跨域模块
+    # 第三方子应用
+    'corsheaders',  # 跨域
+    'django_crontab',  # 定时刷新
 
-    'apps.users', # 注册用户应用模块
-    'verifications', # 注册验证码模块
+    # 自定义子应用
+    'apps.users',  # 用户注册
+    'apps.verifications',  # 用户注册验证码
+    'apps.oauth',  # QQ登录
+    'apps.areas',  # 地区
+    'apps.contents',  # 首页公告
+    'apps.goods',  # 商品
 ]
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -175,6 +185,7 @@ sys.path.insert(1, os.path.join(os.path.dirname(BASE_DIR), 'utils'))
 
 AUTH_USER_MODEL = 'users.User'
 
+
 # CORS跨域请求白名单设置
 CORS_ORIGIN_WHITELIST = (
     'http://127.0.0.1:8080',
@@ -182,6 +193,7 @@ CORS_ORIGIN_WHITELIST = (
     'http://www.meiduo.site:8080',
 )
 CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
+
 
 
 LOGGING = {
@@ -225,9 +237,47 @@ LOGGING = {
     }
 }
 
-# 实例化日志对象
 import logging
+# 实例化日志对象
 logger = logging.getLogger('django')
 
-
 AUTHENTICATION_BACKENDS = ['apps.users.utils.AuthBackend']
+
+# 判断用户是否登陆后，指定未登录用户重定向的地址
+# LOGIN_URL = '/login/'
+
+
+# 发送短信的相关设置, 这些设置是当用户没有发送相关字段时, 默认使用的内容:
+# 发送短信必须进行的设置:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# 我们使用的 smtp服务器 地址
+EMAIL_HOST = 'smtp.163.com'
+# 端口号
+EMAIL_PORT = 25
+# 下面的内容是可变的, 随后台设置的不同而改变:
+# 发送邮件的邮箱
+EMAIL_HOST_USER = 'adamyoungjack@163.com'
+# 在邮箱中设置的客户端授权密码
+EMAIL_HOST_PASSWORD = 'XFUYEOUJDXMVMIMN'
+# 收件人看到的发件人
+EMAIL_FROM = '美多商城<adamyoungjack@163.com>'
+# 邮箱验证链接
+EMAIL_VERIFY_URL = 'http://www.meiduo.site:8080/success_verify_email.html?token='
+
+
+# 指定自定义的Django文件存储类
+DEFAULT_FILE_STORAGE = 'meiduo_mall_project.utils.fdfs.FastDFSStorage'
+
+
+# FastDFS相关参数
+FDFS_BASE_URL = 'http://image.meiduo.site:8888/'
+
+
+# front_end_pc文件夹的封装
+STATIC_FILE_PATH = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'front_end_pc')
+
+
+# 定时刷新任务规则
+CRONJOBS = [('*/1 * * * *', 'apps.contents.crons.generate_static_index_html', '>>'
+             + os.path.join(BASE_DIR, 'logs/crontab.log'))]
+

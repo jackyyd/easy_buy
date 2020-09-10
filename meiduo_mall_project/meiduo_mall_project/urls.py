@@ -14,10 +14,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path, include, re_path
 # 总路由中注册路由转换器
 from django.urls import register_converter
-from utils import converters
+from meiduo_mall_project.utils import converters
 
 
 register_converter(converters.UsernameConverter, 'username')
@@ -28,4 +28,8 @@ urlpatterns = [
     path('', include('apps.users.urls')),
     # 添加verifications总路由
     path('', include('apps.verifications.urls')),
+    # 添加oauth总路由
+    path('', include('apps.oauth.urls')),
+    # 地区总路由
+    re_path('', include('apps.areas.urls')),
 ]

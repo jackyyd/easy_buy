@@ -1,3 +1,3 @@
 """
-settings: django配置的包
+settings: 配置django的包
 """

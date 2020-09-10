@@ -2,6 +2,9 @@
   <dictionary name="python">
     <words>
       <w>corsheaders</w>
+      <w>cronjobs</w>
+      <w>crons</w>
+      <w>crontab</w>
       <w>usernames</w>
     </words>
   </dictionary>

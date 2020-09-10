@@ -1,6 +1,4 @@
-"""
-tasks :固定名称
-"""
+"""tasks :固定名称"""
 from celery_task.main import celery_app
 from celery_task.yuntongxun.sms import CCP
 

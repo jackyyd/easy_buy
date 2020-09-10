@@ -4,7 +4,7 @@ from django_redis import get_redis_connection
 from apps.verifications.libs.captcha.captcha import captcha
 import random
 from verifications.libs.yuntongxun.sms import CCP
-from settings.dev import logger
+from meiduo_mall_project.settings.dev import logger
 from celery_task.sms.tasks import ccp_send_sms_code
 
 
@@ -90,11 +90,12 @@ class SMSCodeView(View):
 
         # 9. 发送短信验证码
         # 短信模板
-        CCP().send_template_sms(mobile,[sms_code, 5], 1)
-        print('短信验证码:',sms_code)
+        CCP().send_template_sms(mobile, [sms_code, 5], 1)
+        print('短信验证码:', sms_code)
         # # 9. 异步发送验证码
         # ccp_send_sms_code.delay(mobile, sms_code)
 
         # 10. 响应结果
         return http.JsonResponse({'code': 0,
-                                  'errmsg': '发送短信成功'})
+                                  'errmsg': '发送短信成功'
+                                  })

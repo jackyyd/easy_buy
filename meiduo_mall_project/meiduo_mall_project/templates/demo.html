@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    {{ name }}
+    {{ age }}
+    {% for like in likes %}
+        <li>{{ like }}</li>
+    {% endfor %}
+    <img src="{{ sku_image.image.url }}">
+</body>
+</html>

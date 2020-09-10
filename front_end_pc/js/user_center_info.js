@@ -61,7 +61,8 @@ var vm = new Vue({
             })
                 .then(response => {
                     if (response.data.code == 400) {
-                        location.href = 'login.html'
+                        console.log(response.data);
+                        location.href = 'login.html';
                         return
                     }
                     this.username = response.data.info_data.username;

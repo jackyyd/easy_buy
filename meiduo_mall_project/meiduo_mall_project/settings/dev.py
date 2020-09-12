@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     # 第三方子应用
     'corsheaders',  # 跨域
     'django_crontab',  # 定时刷新
-    'haystack', # 用于和es服务器交互的一个中间件
+    'haystack',  # 用于和es服务器交互的一个中间件
 
     # 自定义子应用
     'apps.users',  # 用户注册
@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'apps.contents',  # 首页公告
     'apps.goods',  # 商品
     'apps.carts',  # 购物车
+    'apps.orders',  # 订单
 ]
 
 

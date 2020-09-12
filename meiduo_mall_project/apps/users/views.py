@@ -570,7 +570,7 @@ class UpdateAddresTitleView(LoginRequiredJSONMixin, View):
         # 3. 业务数据处理
         try:
             # 3.1 查询地址
-            address =  Address.objects.get(id=address_id)
+            address = Address.objects.get(id=address_id)
             # 3.2 设置新的地址标题
             address.title = title
             address.save()

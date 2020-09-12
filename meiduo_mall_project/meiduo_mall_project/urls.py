@@ -36,4 +36,6 @@ urlpatterns = [
     re_path(r'', include('apps.goods.urls')),
     # 购物车
     re_path(r'', include('apps.carts.urls')),
+    # 订单
+    re_path(r'', include('apps.orders.urls')),
 ]

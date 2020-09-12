@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     # 第三方子应用
     'corsheaders',  # 跨域
     'django_crontab',  # 定时刷新
+    'haystack', # 用于和es服务器交互的一个中间件
 
     # 自定义子应用
     'apps.users',  # 用户注册
@@ -172,6 +173,13 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     },
+    "history": { # 用户浏览记录
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/3",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"
@@ -281,3 +289,21 @@ STATIC_FILE_PATH = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'fro
 CRONJOBS = [('*/1 * * * *', 'apps.contents.crons.generate_static_index_html', '>>'
              + os.path.join(BASE_DIR, 'logs/crontab.log'))]
 
+
+
+# Haystack配置项
+HAYSTACK_CONNECTIONS = {
+    # 默认的es服务器链接
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'http://192.168.203.153:9200/', # Elasticsearch服务器ip地址，端口号固定为9200
+        'INDEX_NAME': 'meiduo_mall', # Elasticsearch建立的索引库的名称
+    },
+}
+
+# 当被检索的数据被修改了，haystack就会把新的数据写入es索引库
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
+
+# 可以在 dev.py 中添加如下代码, 用于决定每页显示数据条数:
+HAYSTACK_SEARCH_RESULTS_PER_PAGE = 5

@@ -12,6 +12,8 @@ from meiduo_mall_project.utils.secret import SecretOauth
 from apps.users.models import User
 from meiduo_mall_project.utils.logger import logger
 from .models import Address
+from apps.goods.models import SKU
+from django_redis import get_redis_connection
 
 
 # 定义用户名类视图
@@ -633,3 +635,95 @@ class UpdatePasswordView(View):
         })
         response.delete_cookie('username')
         return response
+
+
+from apps.goods.models import SKU
+from django_redis import get_redis_connection
+# 用户浏览历史记录
+class UserBrowseHistory(LoginRequiredJSONMixin, View):
+
+    def post(self, request):
+
+        user = request.user
+        # 1、提取参数
+        # 2、校验参数
+        data = json.loads(request.body.decode())
+        sku_id = data.get('sku_id')
+        if not sku_id:
+            return JsonResponse({
+                'code': 400,
+                'errmsg': '缺少参数'
+            }, status=400)
+
+        try:
+            SKU.objects.get(pk=sku_id, is_launched=True)
+        except SKU.DoesNotExist as e:
+            return JsonResponse({
+                'code': 404,
+                'errmsg': '商品已下架/不存在'
+            }, status=404)
+
+        # 3、数据/业务处理 —— 把访问的sku的id写入redis表示记录一条浏览历史
+        # 3.1、获取"history"缓存配置的redis链接
+        conn = get_redis_connection('history')
+        p = conn.pipeline()
+        # 3.2、历史记录写入缓存
+        # 3.2.1、去重
+        p.lrem(
+            'history_%d' % user.id,
+            0, # 删除所有指定成员
+            sku_id
+        )
+        # 3.2.2、插入列表头
+        p.lpush(
+            'history_%d' % user.id,
+            sku_id
+        )
+        # 3.2.3、截断保留5个记录
+        p.ltrim(
+            'history_%d' % user.id,
+            0,
+            4
+        )
+        p.execute() # 批量执行redis指令
+
+        # 4、构建响应
+        return JsonResponse({
+            'code': 0,
+            'errmsg': 'ok'
+        })
+
+
+    # 查看历史
+    def get(self, request):
+        user = request.user
+        # 1、提取参数
+        # 2、校验参数
+        # 3、数据/业务处理 —— 用户浏览的sku商品信息返回(读redis获取最近浏览的历史sku.id, 读mysql获取sku详细信息)
+        # 3.1、读redis获取浏览历史
+        conn = get_redis_connection('history')
+        # sku_ids = [b'6', b'3', b'4', b'14', b'15']
+        sku_ids = conn.lrange(
+            'history_%d' % user.id,
+            0,
+            -1
+        )
+
+        skus = []  # 用于记录返回sku商品的详细信息
+        # 3.2、读mysql获取详细信息
+        for sku_id in sku_ids:
+            # sku_id = b'6'
+            sku = SKU.objects.get(pk=int(sku_id))
+            skus.append({
+                'id': sku.id,
+                'name': sku.name,
+                'default_image_url': sku.default_image.url,
+                'price': sku.price
+            })
+
+        # 4、构建响应
+        return JsonResponse({
+            'code': 0,
+            'errmsg': 'ok',
+            'skus': skus
+        })

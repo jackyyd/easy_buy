@@ -65,12 +65,12 @@ class Brand(BaseModel):
 
 class SPU(BaseModel):
     """商品SPU"""
-    brands = models.ForeignKey(Brand, on_delete=models.PROTECT, verbose_name='品牌')
+    brand = models.ForeignKey(Brand, on_delete=models.PROTECT, verbose_name='品牌')
     category1 = models.ForeignKey(GoodsCategory, related_name='cat_spu1', on_delete=models.PROTECT, verbose_name='一级类别')
     category2 = models.ForeignKey(GoodsCategory, related_name='cat_spu2', on_delete=models.PROTECT, verbose_name='二级类别')
     category3 = models.ForeignKey(GoodsCategory, related_name='cat_spu3', on_delete=models.PROTECT, verbose_name='三级类别')
     name = models.CharField(max_length=50, verbose_name='名称')
-    sales = models.IntegerField(default=0, verbose_name='销量')
+    scales = models.IntegerField(default=0, verbose_name='销量')
     comments = models.IntegerField(default=0, verbose_name='评价数')
     desc_detail = models.TextField(default='', verbose_name='详细介绍')
     desc_pack = models.TextField(default='', verbose_name='包装信息')
@@ -95,7 +95,7 @@ class SKU(BaseModel):
     cost_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='进价')
     market_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='市场价')
     stock = models.IntegerField(default=0, verbose_name='库存')
-    scales = models.IntegerField(default=0, verbose_name='销量')
+    sales = models.IntegerField(default=0, verbose_name='销量')
     comments = models.IntegerField(default=0, verbose_name='评价数')
     is_launched = models.BooleanField(default=True, verbose_name='是否上架销售')
     default_image = models.ImageField(max_length=200, null=True, blank=True, verbose_name='默认图片')
@@ -125,7 +125,7 @@ class SKUImage(BaseModel):
 
 class SPUSpecification(BaseModel):
     """商品SPU规格"""
-    spec = models.ForeignKey(SPU, related_name='specs', on_delete=models.CASCADE, verbose_name='商品SPU')
+    spu = models.ForeignKey(SPU, related_name='specs', on_delete=models.CASCADE, verbose_name='商品SPU')
     name = models.CharField(max_length=20, verbose_name='规格名称')
 
     # 对表进行相关设置

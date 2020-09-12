@@ -2,9 +2,9 @@ from django.views import View
 from django.conf import settings
 from django.http import JsonResponse
 
-# # 定义类视图
-# class View(View):
-#     """"""
+
+# class IndexView(View):
+#     """实现首页接口"""
 #     def (self, request):
 #         # 1. 接受参数
 #         # 2. 校验参数

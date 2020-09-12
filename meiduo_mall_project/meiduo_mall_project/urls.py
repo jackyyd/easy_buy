@@ -32,4 +32,6 @@ urlpatterns = [
     path('', include('apps.oauth.urls')),
     # 地区总路由
     re_path('', include('apps.areas.urls')),
+    # 商品
+    re_path(r'', include('apps.goods.urls')),
 ]

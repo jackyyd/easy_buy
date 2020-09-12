@@ -102,4 +102,3 @@ def generate_static_index_html():
     # 4. 写入静态文件
     with open(path, 'w') as f:
         f.write(page)
-    print('生成静态文件')

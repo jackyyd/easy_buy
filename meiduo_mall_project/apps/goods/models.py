@@ -98,7 +98,7 @@ class SKU(BaseModel):
     sales = models.IntegerField(default=0, verbose_name='销量')
     comments = models.IntegerField(default=0, verbose_name='评价数')
     is_launched = models.BooleanField(default=True, verbose_name='是否上架销售')
-    default_image = models.ImageField(max_length=200, null=True, blank=True, verbose_name='默认图片')
+    default_image_url = models.ImageField(max_length=200, null=True, blank=True, verbose_name='默认图片')
 
     # 对表进行相关设置
     class Meta:

@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'apps.areas',  # 地区
     'apps.contents',  # 首页公告
     'apps.goods',  # 商品
+    'apps.carts',  # 购物车
 ]
 
 
@@ -176,6 +177,14 @@ CACHES = {
     "history": { # 用户浏览记录
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/3",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
+    # 新增carts配置使用5号redis库存购物车数据
+    "carts": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/5",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }

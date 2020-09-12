@@ -1,11 +1,12 @@
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.views import View
 # Paginator：分页器对象，使用该对象可以把一个查询集进行分页
 from django.core.paginator import Paginator, EmptyPage
 from .models import SKU
 from .utils import get_breadcrumb
-# Create your views here.
+from haystack.views import SearchView
+
+
 
 class ListView(View):
 
@@ -43,7 +44,7 @@ class ListView(View):
             # sku:当前页中的每一个SKU对象
             sku_list.append({
                 'id': sku.id,
-                'default_image_url': sku.default_image.url,
+                'default_image_url': sku.default_image_url.url,
                 'name': sku.name,
                 'price': sku.price
             })
@@ -54,7 +55,7 @@ class ListView(View):
             'errmsg': 'ok',
             'breadcrumb': get_breadcrumb(category_id),
             'list': sku_list,
-            'count': paginator.num_pages # 总页数
+            'count': paginator.num_pages  # 总页数
         })
 
 
@@ -74,7 +75,7 @@ class HotGoodsView(View):
         for sku in skus:
             hot_skus.append({
                 'id': sku.id,
-                'default_image_url': sku.default_image.url,
+                'default_image_url': sku.default_image_url.url,
                 'name': sku.name,
                 'price': sku.price
             })
@@ -88,7 +89,6 @@ class HotGoodsView(View):
 
 
 # sku商品搜索接口
-from haystack.views import SearchView
 class MySearchView(SearchView):
     # 当前继承的SearchView是HayStack工具提供的
     # 该视图已经实现了一个self.get视图函数，来完成搜索
@@ -108,7 +108,7 @@ class MySearchView(SearchView):
                 'id': sku.id,
                 'name': sku.name,
                 'price': sku.price,
-                'default_image_url': sku.default_image.url,
+                'default_image_url': sku.default_image_url.url,
                 'searchkey': context['query'],
                 'page_size': context['paginator'].per_page,
                 'count': context['paginator'].count

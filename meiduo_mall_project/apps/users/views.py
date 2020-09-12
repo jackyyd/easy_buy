@@ -3,6 +3,8 @@ import json
 import re
 from django import http
 from django.contrib.auth import login, logout, authenticate
+
+from carts.utils import merge_cart_cookie_to_redis
 from meiduo_mall_project.utils.views import LoginRequiredJSONMixin
 from django.http import JsonResponse
 from django.conf import settings
@@ -113,7 +115,7 @@ class RegisterView(View):
         # 将用户名写入cookie，有效期14天
         response.set_cookie('username', user.username, max_age=3600*24*14)
         # 返回响应结果
-        return response
+        return response, merge_cart_cookie_to_redis(request, response)
 
 
 # 定义用户登录类视图
@@ -168,8 +170,9 @@ class LoginView(View):
         # 在响应对象中设置用户名信息
         # 将用户名设置在cookie中，有效期14天
         response.set_cookie('username', user.username, max_age=3600*24*14)
-        # 返回响应对象
-        return response
+        # 返回响应对象# 合并购物车
+        return response, merge_cart_cookie_to_redis(request, response)
+
 
 
 # 定义用户退出类视图

@@ -4,6 +4,8 @@ from django.contrib.auth import login
 from django.views import View
 from django.http import JsonResponse
 from django_redis import get_redis_connection
+
+from carts.utils import merge_cart_cookie_to_redis
 from meiduo_mall_project.utils.secret import SecretOauth
 from apps.users.models import User
 from django.conf import settings
@@ -82,7 +84,7 @@ class QQUserView(View):
             response.set_cookie('username', user.username, max_age=3600 * 24 * 14)
 
             # 返回响应
-            return response
+            return response, merge_cart_cookie_to_redis(request, response)
         # 4. 返回响应
 
     def post(self, request):

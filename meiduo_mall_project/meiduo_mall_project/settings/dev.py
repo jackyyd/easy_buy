@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'apps.goods',  # 商品
     'apps.carts',  # 购物车
     'apps.orders',  # 订单
+    'apps.payment'  # 支付
 ]
 
 
@@ -317,3 +318,10 @@ HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 
 # 可以在 dev.py 中添加如下代码, 用于决定每页显示数据条数:
 HAYSTACK_SEARCH_RESULTS_PER_PAGE = 5
+
+
+# 对接支付宝
+ALIPAY_APPID = '2021000116681144'  # 应用ID
+ALIPAY_DEBUG = True  # 调试模式，对接沙箱应用时为True,对接正式应用时为False
+ALIPAY_URL = 'https://openapi.alipaydev.com/gateway.do'  # 对接支付宝的网关，如果对接沙箱应用就是测试网关
+ALIPAY_RETURN_URL = "http://www.meiduo.site:8080/pay_success.html"  # 支付成功后的回调地址

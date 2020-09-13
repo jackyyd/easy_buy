@@ -10,7 +10,7 @@ from django_redis import get_redis_connection
 from apps.goods.models import SKU
 from apps.orders.models import OrderInfo, OrderGoods
 from apps.users.models import Address
-from views import LoginRequiredJSONMixin
+from meiduo_mall_project.utils.views import LoginRequiredJSONMixin
 from decimal import Decimal
 
 

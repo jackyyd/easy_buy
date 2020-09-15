@@ -1,21 +1,18 @@
-from django.views import View
 import json
 import re
+from django.views import View
 from django import http
 from django.contrib.auth import login, logout, authenticate
-
 from carts.utils import merge_cart_cookie_to_redis
 from meiduo_mall_project.utils.views import LoginRequiredJSONMixin
 from django.http import JsonResponse
 from django.conf import settings
-from celery_task.email.tasks import send_verify_email
+from celery_tasks.email.tasks import send_verify_email
 from .utils import generate_verify_email_url
 from meiduo_mall_project.utils.secret import SecretOauth
 from apps.users.models import User
 from meiduo_mall_project.utils.logger import logger
 from .models import Address
-from apps.goods.models import SKU
-from django_redis import get_redis_connection
 
 
 # 定义用户名类视图
@@ -24,13 +21,16 @@ class UsernameCountView(View):
     判断用户名是否重复注册
     """
     def get(self, request, username):
-        # 查询username在数据库中的个数
+        # 1. 接收参数
+        # 2. 校验参数
+        # 3. 业务数据处理
+        # 3.1 查询username在数据库中的个数
         try:
             count = User.objects.filter(username=username).count()
         except Exception as e:
-
+            settings.logger.error(e)
             return http.JsonResponse({'code': 400, 'errmsg': '访问数据库失败'})
-        # 返回结果(json)-->code & errmsg &count
+        # 4. 构建响应并返回
         return http.JsonResponse({'code': 0, 'errmsg': 'ok', 'count': count})
 
 
@@ -124,45 +124,44 @@ class LoginView(View):
     实现用户登陆接口
     """
     def post(self, request):
-        """
-        请求方式：POST
-        :param request:
-        :return:
-        """
         # 1. 参数接收
         data_dict = json.loads(request.body.decode())
         username = data_dict.get('username')
         password = data_dict.get('password')
         remembered = data_dict.get('remembered')
-        # 校验参数
+        # 2. 校验参数
+        # 2.1 整体校验
         if not all([username, password]):
             return http.JsonResponse({
                 'code': 400,
                 'errmsg': '缺少必传参数'
             })
-        # 校验用户名
+        # 2.2 部分校验
+        # 2.2.1校验用户名
         if not re.match(r'^[a-zA-Z0-9_-]{5,20}$', username):
             return http.HttpResponseForbidden('请输入正确的用户名或手机号')
-
-        # 检验密码
+        # 2.2.2检验密码
         if not re.match(r'^[0-9A-Za-z]{8,20}$', password):
             return http.HttpResponseForbidden('密码最少8位，最长20位')
+        # 3. 业务数据处理
+        # 3.1 认证用户
         # 认证用户：使用账号查询用户是否存在，如果用户存在，再检验密码是否正确
         # user = User.objects.get(username=username)
         # user.check_password()
         user = authenticate(request, username=username, password=password)
-
         if user is None:
             return http.JsonResponse({
                 'code': '400',
                 'errmsg': '用户名或密码错误'
             })
-        request.session.set_expiry(None) if remembered else request.session.set_expiry(0)
-
-        # 3. 数据处理
-        # 4. 状态保持
+        # 3.2 设置session
+        if remembered:
+            request.session.set_expiry(None)
+        else:
+            request.session.set_expiry(0)
+        # 3.3 状态保持
         login(request, user)
-        # 5. 生成响应对象
+        # 4. 构建响应并返回
         response = http.JsonResponse({
             'code': 0,
             'errmsg': 'ok'

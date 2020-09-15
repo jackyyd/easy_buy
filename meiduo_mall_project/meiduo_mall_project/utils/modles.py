@@ -1,5 +1,5 @@
 """
-models: 管理公共模型的模块
+models: 为公共模型类的模块
 """
 from django.db import models
 

@@ -7,7 +7,6 @@ from .utils import get_breadcrumb
 from haystack.views import SearchView
 
 
-
 class ListView(View):
 
     def get(self, request, category_id):

@@ -1,6 +1,6 @@
 """tasks :固定名称"""
-from celery_task.main import celery_app
-from celery_task.yuntongxun.sms import CCP
+from celery_tasks.main import celery_app
+from celery_tasks.yuntongxun.sms import CCP
 
 
 @celery_app.task(name='ccp_send_sms_code')

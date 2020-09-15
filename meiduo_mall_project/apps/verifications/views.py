@@ -5,7 +5,7 @@ from apps.verifications.libs.captcha.captcha import captcha
 import random
 from verifications.libs.yuntongxun.sms import CCP
 from meiduo_mall_project.settings.dev import logger
-from celery_task.sms.tasks import ccp_send_sms_code
+from celery_tasks.sms.tasks import ccp_send_sms_code
 
 
 # 定义图形验证码类视图

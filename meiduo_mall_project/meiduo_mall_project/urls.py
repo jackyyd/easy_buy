@@ -22,6 +22,7 @@ from meiduo_mall_project.utils import converters
 
 register_converter(converters.UsernameConverter, 'username')
 register_converter(converters.MobileConverter, 'mobile')
+# 注册子应用路由，便于浏览器访问
 urlpatterns = [
     path('admin/', admin.site.urls),
     # 添加apps总路由
@@ -40,4 +41,6 @@ urlpatterns = [
     re_path(r'', include('apps.orders.urls')),
     # 支付
     re_path(r'', include('apps.payment.urls')),
+    # 后台管理
+    re_path(r'meiduo_admin/', include('apps.meiduo_admin.urls')),
 ]

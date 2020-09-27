@@ -1,8 +1,8 @@
 from django.urls import path, re_path
 from . import views
 
-app_name = 'users'
 
+app_name = 'users'
 
 urlpatterns = [
     path('usernames/<username:username>/count/', views.UsernameCountView.as_view()),
@@ -17,10 +17,7 @@ urlpatterns = [
     re_path(r'^addresses/$', views.AddressView.as_view()),
     re_path(r'^addresses/(?P<address_id>\d+)/$', views.UpdateDestroyAddressView.as_view()),
     re_path(r'^addresses/(?P<address_id>\d+)/default/$', views.DefaultAddressView.as_view()),
-    re_path(r'^addresses/(?P<address_id>\d+)/title/$', views.UpdateAddresTitleView.as_view()),
+    re_path(r'^addresses/(?P<address_id>\d+)/title/$', views.UpdateAddressTitleView.as_view()),
     re_path(r'^password/$', views.UpdatePasswordView.as_view()),
-    # 记录历史
-    re_path(r'^browse_histories/$', views.UserBrowseHistory.as_view()),
-    # 记录/访问历史
     re_path(r'^browse_histories/$', views.UserBrowseHistory.as_view()),
 ]

@@ -1,5 +1,8 @@
 import os
 import sys
+
+import datetime
+
 """
 dev: 开发配置文件的模块
 """
@@ -38,7 +41,7 @@ ALLOWED_HOSTS = ['api.meiduo.site',
 
 
 # Application definition
-# 注册子应用
+# 注册子应用,迁移建表
 INSTALLED_APPS = [
     # django子应用
     'django.contrib.admin',
@@ -58,11 +61,10 @@ INSTALLED_APPS = [
     'apps.verifications',  # 用户注册验证码
     'apps.oauth',  # QQ登录
     'apps.areas',  # 地区
-    'apps.contents',  # 首页公告
     'apps.goods',  # 商品
-    'apps.carts',  # 购物车
     'apps.orders',  # 订单
-    'apps.payment'  # 支付
+    'apps.payment',  # 支付
+    'apps.meiduo_admin',  # 后台管理
 ]
 
 
@@ -76,6 +78,22 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     ]
+
+# CORS跨域请求白名单设置
+CORS_ORIGIN_WHITELIST = (
+    'http://127.0.0.1:8080',
+    'http://localhost:8080',
+    'http://www.meiduo.site:8080',
+    # 后台管理
+    'http://www.meiduo.site:8081',
+    'http://127.0.0.1:8081',
+
+
+
+
+)
+CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
+
 
 ROOT_URLCONF = 'meiduo_mall_project.urls'
 
@@ -205,13 +223,7 @@ sys.path.insert(1, os.path.join(os.path.dirname(BASE_DIR), 'utils'))
 AUTH_USER_MODEL = 'users.User'
 
 
-# CORS跨域请求白名单设置
-CORS_ORIGIN_WHITELIST = (
-    'http://127.0.0.1:8080',
-    'http://localhost:8080',
-    'http://www.meiduo.site:8080',
-)
-CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
+
 
 
 
@@ -325,3 +337,20 @@ ALIPAY_APPID = '2021000116681144'  # 应用ID
 ALIPAY_DEBUG = True  # 调试模式，对接沙箱应用时为True,对接正式应用时为False
 ALIPAY_URL = 'https://openapi.alipaydev.com/gateway.do'  # 对接支付宝的网关，如果对接沙箱应用就是测试网关
 ALIPAY_RETURN_URL = "http://www.meiduo.site:8080/pay_success.html"  # 支付成功后的回调地址
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+      	# 追加Token认证后端 —— 用于验证token有效期识别用户身份
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+}
+
+JWT_AUTH = {
+  	# 有效期设置为10天
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=10),
+    # 来指定拓展插件默认视图返回的响应参数构造函数
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'meiduo_admin.utils.jwt_response_handlers.jwt_response_payload_handler'
+}
+

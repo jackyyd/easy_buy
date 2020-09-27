@@ -31,7 +31,7 @@ class ImageCodeView(View):
         # 图形验证码必须要有有效期的：美多商城的设计是300秒有效期
         # redis_conn.setex('key', '过期时间', 'value')
         redis_conn.setex('img_%s' % uuid, 300, text)
-
+        print(text)
         # 响应图形验证码: image/jpg
         return http.HttpResponse(image, content_type='image/jpg')
 
@@ -81,6 +81,7 @@ class SMSCodeView(View):
         # 7. 生成短信验证码：生成6位数验证码
         sms_code = '%06d' % random.randint(0, 999999)
         logger.info(sms_code)
+        print(sms_code)
 
         # 8. 保存短信验证码
         # 短信验证码有效期，单位：300秒

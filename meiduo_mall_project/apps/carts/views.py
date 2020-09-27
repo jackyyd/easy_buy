@@ -40,7 +40,6 @@ class CartsView(View):
         if not isinstance(selected, bool):
             return JsonResponse({'code': 404, 'errmsg': 'selected参数有误'}, status=400)
 
-
         # 3、数据/业务处理
         if user.is_authenticated:
             # 3.1、用户登陆，存redis
@@ -54,9 +53,9 @@ class CartsView(View):
             )
             # 3.1.2、当前sku商品选中状态
             if selected:
-                conn.sadd('selected_%d'%user.id, sku_id)
+                conn.sadd('selected_%d' % user.id, sku_id)
             else:
-                conn.srem('selected_%d'%user.id, sku_id)
+                conn.srem('selected_%d' % user.id, sku_id)
 
             return JsonResponse({'code': 0, 'errmsg': 'ok'})
 
@@ -97,7 +96,6 @@ class CartsView(View):
             )
             return response
 
-
     # 展示购物车
     def get(self, request):
         user = request.user
@@ -111,15 +109,15 @@ class CartsView(View):
             conn = get_redis_connection('carts')
             # 商品id和数量数据
             # {b"1": b"5", b"2": b"15"}
-            skus_dict = conn.hgetall('carts_%s'%user.id)
+            skus_dict = conn.hgetall('carts_%s' % user.id)
             # 勾选状态
             # [b"1", b"2"]
-            skus_selected = conn.smembers('selected_%d'%user.id)
-            for k,v in skus_dict.items():
+            skus_selected = conn.smembers('selected_%d' % user.id)
+            for k, v in skus_dict.items():
                 # k: b"1"; v: b"5"
                 cart_dict[int(k)] = {
                     "count": int(v),
-                    "selected": k in skus_selected # b"1" in [b"1", b"2"] --> True
+                    "selected": k in skus_selected  # b"1" in [b"1", b"2"] --> True
                 }
         else:
             # 从cookie中读购物车数据
@@ -129,7 +127,7 @@ class CartsView(View):
 
         cart_skus = []
         # 根据cart_dict字典数据，查找sku商品详细信息
-        for k,v in cart_dict.items():
+        for k, v in cart_dict.items():
             # k: 1; v: {"count": 5, "selected": True}
             sku = SKU.objects.get(pk=k)
             cart_skus.append({
@@ -147,7 +145,6 @@ class CartsView(View):
             'errmsg': 'ok',
             'cart_skus': cart_skus
         })
-
 
     # 修改购物车
     def put(self, request):
@@ -190,7 +187,7 @@ class CartsView(View):
                 count
             )
             if selected:
-                conn.sadd('selected_%d'%user.id, sku_id)
+                conn.sadd('selected_%d' % user.id, sku_id)
             else:
                 conn.srem('selected_%d' % user.id, sku_id)
 
@@ -208,9 +205,9 @@ class CartsView(View):
             # 未登陆，修改cookie购物车数据
             # 购物车字典格式{1: {"count": 5, "selected": True}}
             cart_dict = None # 改变是用来记录cookie中解码出来的购物车字典数据，如果cookie没有购物车该变量设置为空字典
-            cookie_carts = request.COOKIES.get('carts') # "ASjibgrehgbBHBHlbgre=" or None
+            cookie_carts = request.COOKIES.get('carts')  # "ASjibgrehgbBHBHlbgre=" or None
             if cookie_carts:
-                cart_dict = CookieSecret.loads(cookie_carts.encode()) # 解码得出字典数据
+                cart_dict = CookieSecret.loads(cookie_carts.encode())  # 解码得出字典数据
             else:
                 cart_dict = {}
 
@@ -237,7 +234,6 @@ class CartsView(View):
             )
             return response
 
-
     # 删除购物车
     def delete(self, request):
         user = request.user
@@ -249,8 +245,8 @@ class CartsView(View):
             # 商品和数量哈希对象：carts_1 : {1: 5}
             # 选中状态集合对象：[1]
             conn = get_redis_connection('carts')
-            conn.hdel('carts_%d'%user.id, sku_id)
-            conn.srem('selected_%d'%user.id, sku_id)
+            conn.hdel('carts_%d' % user.id, sku_id)
+            conn.srem('selected_%d' % user.id, sku_id)
             return JsonResponse({'code': 0, 'errmsg': 'ok'})
         else:
             # 2、未登陆，删除cookie购物车
@@ -279,6 +275,7 @@ class CartsView(View):
             )
             return response
 
+
 class CartsSelectAllView(View):
 
     def put(self, request):
@@ -292,7 +289,6 @@ class CartsSelectAllView(View):
                 'errmsg': '参数有误'
             }, status=400)
 
-
         # 3、业务/数据处理 —— 根据selected将所有的sku商品勾选状态设置为True or False
         user = request.user
         if user.is_authenticated:
@@ -300,15 +296,15 @@ class CartsSelectAllView(View):
             conn = get_redis_connection('carts')
             # (1)、获取当前购物车中的所有的sku商品
             # cart_dict = {b'1': b'5'}
-            cart_dict = conn.hgetall('carts_%d'%user.id)
+            cart_dict = conn.hgetall('carts_%d' % user.id)
             # sku_ids = [b'1', b'2']
             sku_ids = cart_dict.keys()
             # (2)、把全部sku的id从选中状态的集合中添加/删除
             if selected:
-                # sadd('selected_%d'%user.id,  b'1', b'2'...)
-                conn.sadd('selected_%d'%user.id, *sku_ids)
+                #  sadd('selected_%d'%user.id,  b'1', b'2'...)
+                conn.sadd('selected_%d' % user.id, *sku_ids)
             else:
-                conn.srem('selected_%d'%user.id, *sku_ids)
+                conn.srem('selected_%d' % user.id, *sku_ids)
 
             return JsonResponse({'code': 0, 'errmsg': 'ok'})
         else:
@@ -342,20 +338,18 @@ class CartsSelectAllView(View):
 class CartsSimpleView(View):
 
     def get(self, request):
-
         user = request.user
-
         # 约定一个购物车字典
-        cart_dict = {} # {1: {"count": 5, "selected": True}}
+        cart_dict = {}  # {1: {"count": 5, "selected": True}}
 
         if user.is_authenticated:
             conn = get_redis_connection('carts')
             # {b'1': b'5'}
-            redis_cart_dict = conn.hgetall('carts_%d'%user.id)
+            redis_cart_dict = conn.hgetall('carts_%d' % user.id)
             # [b'1']
-            redis_selected = conn.smembers('selected_%d'%user.id)
+            redis_selected = conn.smembers('selected_%d' % user.id)
 
-            for k,v in redis_cart_dict.items():
+            for k, v in redis_cart_dict.items():
                 # k: b'1'；  v: b'5'
                 cart_dict[int(k)] = {
                     'count': int(v),
@@ -365,7 +359,6 @@ class CartsSimpleView(View):
             cookie_carts = request.COOKIES.get('carts')
             if cookie_carts:
                 cart_dict = CookieSecret.loads(cookie_carts)
-
 
         sku_ids = cart_dict.keys()
         cart_skus = []
@@ -379,8 +372,5 @@ class CartsSimpleView(View):
                     'default_image_url': sku.default_image_url.url
                 })
 
-        return JsonResponse({
-            'code': 0,
-            'errmsg': 'ok',
-            'cart_skus': cart_skus
-        })
+        return JsonResponse({'code': 0, 'errmsg': 'ok', 'cart_skus': cart_skus})
+ 

@@ -17,6 +17,8 @@ class AuthBackend(ModelBackend):
         except Exception as e:
             logger.warning("获取用户失败：%s", e)
             return None
+        if request is None and not user.is_staff:
+            return None
         if user and user.check_password(password):
             return user
 

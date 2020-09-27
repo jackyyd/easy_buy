@@ -7,12 +7,15 @@ from carts.utils import merge_cart_cookie_to_redis
 from meiduo_mall_project.utils.views import LoginRequiredJSONMixin
 from django.http import JsonResponse
 from django.conf import settings
+from meiduo_mall_project.settings.dev import logger
 from celery_tasks.email.tasks import send_verify_email
 from .utils import generate_verify_email_url
 from meiduo_mall_project.utils.secret import SecretOauth
 from apps.users.models import User
 from meiduo_mall_project.utils.logger import logger
 from .models import Address
+from apps.goods.models import SKU
+from django_redis import get_redis_connection
 
 
 # 定义用户名类视图
@@ -58,7 +61,7 @@ class MobileCountView(View):
         })
 
 
-# 定义用户注册接口
+# 定义用户注册类视图
 class RegisterView(View):
 
     def post(self, request):
@@ -102,7 +105,7 @@ class RegisterView(View):
 
         # 8.注册的核心逻辑-保存到数据库 (username password mobile)
         try:
-            user =  User.objects.create_user(username=username,
+            user = User.objects.create_user(username=username,
                                              password=password,
                                              mobile=mobile)
         except Exception as e:
@@ -115,7 +118,7 @@ class RegisterView(View):
         # 将用户名写入cookie，有效期14天
         response.set_cookie('username', user.username, max_age=3600*24*14)
         # 返回响应结果
-        return response, merge_cart_cookie_to_redis(request, response)
+        return merge_cart_cookie_to_redis(request, response)
 
 
 # 定义用户登录类视图
@@ -170,8 +173,7 @@ class LoginView(View):
         # 将用户名设置在cookie中，有效期14天
         response.set_cookie('username', user.username, max_age=3600*24*14)
         # 返回响应对象# 合并购物车
-        return response, merge_cart_cookie_to_redis(request, response)
-
+        return merge_cart_cookie_to_redis(request, response)
 
 
 # 定义用户退出类视图
@@ -253,7 +255,7 @@ class EmailView(LoginRequiredJSONMixin, View):
 
 
 # 定义验证邮箱类视图
-class VerifyEmailView(LoginRequiredJSONMixin, View):
+class VerifyEmailView(View):
     """
     实现验证邮箱接口
     """
@@ -262,37 +264,26 @@ class VerifyEmailView(LoginRequiredJSONMixin, View):
         token = request.GET.get('token')
         # 2. 校验参数
         if not token:
-            return JsonResponse({
-                'code': 400,
-                'errmsg': '缺少参数token'
-            })
+            return JsonResponse({'code': 400, 'errmsg': '缺少参数token'})
         # 3. 数据处理
         # 解密
-        data_dict = SecretOauth.loads(token)
+        data_dict = SecretOauth().loads(token)
         # 数据库对比id，email
         try:
-            user = User.objects.get(pk=data_dict.get('user.id'), email=data_dict.get('email'))
+            user = User.objects.get(pk=data_dict.get('user_id'), email=data_dict.get('email'))
         except Exception as e:
-            settings.logger.error(e)
-            return JsonResponse({
-                'code': 400,
-                'errmsg': '参数有误'
-            })
+            logger.error(e)
+            return JsonResponse({'code': 400, 'errmsg': '参数有误'})
         try:
             # 修改激活状态
             user.email_active = True
             user.save()
         except Exception as e:
-            settings.logger(e)
-            return JsonResponse({
-                'code': 400,
-                'errmsg': '激活失败'
+            logger.error(e)
+            return JsonResponse({'code': 400, 'errmsg': '激活失败'
             })
         # 4. 构建响应
-        return JsonResponse({
-            'code': 0,
-            'errmsg': '激活成功'
-        })
+        return JsonResponse({'code': 0, 'errmsg': '激活成功'})
 
 
 # 定义新增收货地址类视图
@@ -559,7 +550,7 @@ class DefaultAddressView(LoginRequiredJSONMixin, View):
 
 
 # 定义修改地址标题类视图
-class UpdateAddresTitleView(LoginRequiredJSONMixin, View):
+class UpdateAddressTitleView(LoginRequiredJSONMixin, View):
     """实现修改地址标题接口"""
     def put(self, request, address_id):
         # 1. 接收参数
@@ -639,8 +630,6 @@ class UpdatePasswordView(View):
         return response
 
 
-from apps.goods.models import SKU
-from django_redis import get_redis_connection
 # 用户浏览历史记录
 class UserBrowseHistory(LoginRequiredJSONMixin, View):
 
@@ -719,7 +708,7 @@ class UserBrowseHistory(LoginRequiredJSONMixin, View):
             skus.append({
                 'id': sku.id,
                 'name': sku.name,
-                'default_image_url': sku.default_image.url,
+                'default_image_url': sku.default_image_url.url,
                 'price': sku.price
             })
 

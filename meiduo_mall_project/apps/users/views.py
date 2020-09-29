@@ -1,5 +1,6 @@
 import json
 import re
+from django.utils import timezone
 from django.views import View
 from django import http
 from django.contrib.auth import login, logout, authenticate
@@ -14,7 +15,7 @@ from meiduo_mall_project.utils.secret import SecretOauth
 from apps.users.models import User
 from meiduo_mall_project.utils.logger import logger
 from .models import Address
-from apps.goods.models import SKU
+from apps.goods.models import SKU, GoodsVisitCount
 from django_redis import get_redis_connection
 
 
@@ -647,7 +648,7 @@ class UserBrowseHistory(LoginRequiredJSONMixin, View):
             }, status=400)
 
         try:
-            SKU.objects.get(pk=sku_id, is_launched=True)
+            sku = SKU.objects.get(pk=sku_id, is_launched=True)
         except SKU.DoesNotExist as e:
             return JsonResponse({
                 'code': 404,
@@ -676,7 +677,28 @@ class UserBrowseHistory(LoginRequiredJSONMixin, View):
             0,
             4
         )
-        p.execute() # 批量执行redis指令
+        p.execute()  # 批量执行redis指令
+
+        # TODO: 记录该sku商品的分类访问量
+        # 分类id：sku.category_id
+        # 当日零时刻：
+        cur_0_time = timezone.localtime().replace(hour=0, minute=0, second=0)
+        # (1)、判断当前sku商品的分类，和当日的数据存不存在；
+        try:
+            visit_obj = GoodsVisitCount.objects.get(
+                category_id=sku.category_id,
+                create_time__gte=cur_0_time
+            )
+        except GoodsVisitCount.DoesNotExist as e:
+            # 记录不存在则新建
+            GoodsVisitCount.objects.create(
+                category_id=sku.category_id,
+                count=1
+            )
+        else:
+            # 记录存在则累加
+            visit_obj.count += 1
+            visit_obj.save()
 
         # 4、构建响应
         return JsonResponse({

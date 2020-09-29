@@ -48,6 +48,18 @@ class GoodsChannel(BaseModel):
         return self.category.name
 
 
+class GoodsVisitCount(BaseModel):
+    """统计分类商品访问量模型类"""
+    category = models.ForeignKey(GoodsCategory, on_delete=models.CASCADE, verbose_name='商品分类')
+    count = models.IntegerField(verbose_name='访问量', default=0)
+    date = models.DateField(auto_now_add=True, verbose_name='统计日期')
+
+    class Meta:
+        db_table = 'tb_goods_visit'
+        verbose_name = '统计分类商品访问量'
+        verbose_name_plural = verbose_name
+
+
 class Brand(BaseModel):
     """品牌"""
     name = models.CharField(max_length=20, verbose_name='名称')
@@ -134,7 +146,7 @@ class SPUSpecification(BaseModel):
 
     # 返回名称
     def __str__(self):
-        return '%s:%s' % (self.spec, self.name)
+        return '%s:%s' % (self.spu.name, self.name)
 
 
 class SpecificationOption(BaseModel):

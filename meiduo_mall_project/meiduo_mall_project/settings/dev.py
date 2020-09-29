@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'corsheaders',  # 跨域
     'django_crontab',  # 定时刷新
     'haystack',  # 用于和es服务器交互的一个中间件
+    'rest_framework',  # REST框架
 
     # 自定义子应用
     'apps.users',  # 用户注册
@@ -65,6 +66,8 @@ INSTALLED_APPS = [
     'apps.orders',  # 订单
     'apps.payment',  # 支付
     'apps.meiduo_admin',  # 后台管理
+    'apps.carts',  # 购物车
+    'apps.contents',  # 广告
 ]
 
 
@@ -79,6 +82,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     ]
 
+
+
 # CORS跨域请求白名单设置
 CORS_ORIGIN_WHITELIST = (
     'http://127.0.0.1:8080',
@@ -87,15 +92,13 @@ CORS_ORIGIN_WHITELIST = (
     # 后台管理
     'http://www.meiduo.site:8081',
     'http://127.0.0.1:8081',
-
-
-
-
 )
 CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
 
 
+
 ROOT_URLCONF = 'meiduo_mall_project.urls'
+
 
 TEMPLATES = [
     {
@@ -154,7 +157,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
@@ -268,14 +271,19 @@ LOGGING = {
     }
 }
 
+
 import logging
 # 实例化日志对象
 logger = logging.getLogger('django')
+
+
 
 AUTHENTICATION_BACKENDS = ['apps.users.utils.AuthBackend']
 
 # 判断用户是否登陆后，指定未登录用户重定向的地址
 # LOGIN_URL = '/login/'
+
+
 
 
 # 发送短信的相关设置, 这些设置是当用户没有发送相关字段时, 默认使用的内容:
@@ -296,6 +304,7 @@ EMAIL_FROM = '美多商城<adamyoungjack@163.com>'
 EMAIL_VERIFY_URL = 'http://www.meiduo.site:8080/success_verify_email.html?token='
 
 
+
 # 指定自定义的Django文件存储类
 DEFAULT_FILE_STORAGE = 'meiduo_mall_project.utils.fdfs.FastDFSStorage'
 
@@ -314,7 +323,7 @@ CRONJOBS = [('*/1 * * * *', 'apps.contents.crons.generate_static_index_html', '>
 
 
 
-# Haystack配置项
+# Haystack配置
 HAYSTACK_CONNECTIONS = {
     # 默认的es服务器链接
     'default': {
@@ -328,15 +337,18 @@ HAYSTACK_CONNECTIONS = {
 HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 
 
-# 可以在 dev.py 中添加如下代码, 用于决定每页显示数据条数:
+# 用于决定每页显示数据条数:
 HAYSTACK_SEARCH_RESULTS_PER_PAGE = 5
 
 
-# 对接支付宝
+
+# 支付宝配置
 ALIPAY_APPID = '2021000116681144'  # 应用ID
 ALIPAY_DEBUG = True  # 调试模式，对接沙箱应用时为True,对接正式应用时为False
 ALIPAY_URL = 'https://openapi.alipaydev.com/gateway.do'  # 对接支付宝的网关，如果对接沙箱应用就是测试网关
 ALIPAY_RETURN_URL = "http://www.meiduo.site:8080/pay_success.html"  # 支付成功后的回调地址
+
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -346,6 +358,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ),
 }
+
+
 
 JWT_AUTH = {
   	# 有效期设置为10天
